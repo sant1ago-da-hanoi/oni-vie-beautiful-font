@@ -1,11 +1,16 @@
 # ONI Vietnamese Beautiful Font
 
-Mod thay font cho **Oxygen Not Included** — hỗ trợ hiển thị tiếng Việt (và các ngôn ngữ khác) với font đẹp hơn font mặc định.
+![Preview](preview.png)
+
+Mod thay font cho **Oxygen Not Included** — hỗ trợ hiển thị tiếng Việt với font đẹp hơn font mặc định.
+
+Tương thích với ONI build **719533+** (March 2026 update), hỗ trợ tất cả DLC.
 
 ## Cách hoạt động
 
-- Load font TMP (TextMeshPro) custom từ AssetBundle lúc runtime
-- Dùng Harmony patch `Localization.GetLocale` để inject font vào locale system
+- Load font `.otf` trực tiếp lúc runtime (không cần AssetBundle)
+- Tạo `TMP_FontAsset` và pre-populate atlas với bộ ký tự Vietnamese + ASCII
+- Dùng Harmony patch để inject font vào `Localization.sFontAsset`, cập nhật tất cả `TextStyleSetting` và `LocText`
 - Đọc `config.json` để cấu hình font, ngôn ngữ, hướng text, scale
 
 ## Cài đặt
@@ -34,11 +39,9 @@ Mod thay font cho **Oxygen Not Included** — hỗ trợ hiển thị tiếng Vi
    ├── mod_info.yaml
    ├── mod.yaml
    ├── config.json
-   └── Assets/
-       ├── other/
-       │   └── font          ← AssetBundle cho macOS/Linux
-       └── win/
-           └── font          ← AssetBundle cho Windows
+   ├── preview.png
+   └── Fonts/
+       └── GRAYSTROKE_REGULAR.otf
    ```
 3. Mở game → **Mods** → bật **VieBeautifulFont** → khởi động lại
 4. Vào **Settings → Language** chọn **Tiếng Việt**
@@ -47,23 +50,23 @@ Mod thay font cho **Oxygen Not Included** — hỗ trợ hiển thị tiếng Vi
 
 ## Cấu hình
 
-Tạo file `config.json` trong thư mục mod:
+File `config.json` trong thư mục mod:
 
 ```json
 {
-  "Filename": "font",
-  "Code": "vi",
-  "LeftToRight": true,
-  "Scale": 1.0
+  "filename": "GRAYSTROKE_REGULAR.otf",
+  "code": "vi",
+  "leftToRight": true,
+  "scale": 1.0
 }
 ```
 
 | Field | Mô tả |
 |-------|--------|
-| `Filename` | Tên file AssetBundle chứa font (không cần extension) |
-| `Code` | Mã ngôn ngữ (`vi`, `zh`, ...) |
-| `LeftToRight` | Hướng text — `true` cho LTR, `false` cho RTL |
-| `Scale` | Tỉ lệ font (1.0 = mặc định) |
+| `filename` | Tên file font `.otf` trong thư mục `Fonts/` |
+| `code` | Mã ngôn ngữ (`vi`, `zh`, ...) |
+| `leftToRight` | Hướng text — `true` cho LTR, `false` cho RTL |
+| `scale` | Tỉ lệ font (1.0 = mặc định) |
 
 ## Build
 
