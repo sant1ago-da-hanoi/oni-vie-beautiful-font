@@ -20,7 +20,11 @@ namespace oni_vietnamese.Utils {
                 }
 
                 font = ab.LoadAllAssets<TMP_FontAsset>()[0];
-                font.fontInfo.Scale = config.Scale;
+
+                // faceInfo is a struct — copy, modify, reassign
+                var faceInfo = font.faceInfo;
+                faceInfo.scale = config.Scale;
+                font.faceInfo = faceInfo;
 
                 if (Application.platform == RuntimePlatform.LinuxPlayer) {
                     font.material.shader = Resources.Load<TMP_FontAsset>("RobotoCondensed-Regular").material.shader;

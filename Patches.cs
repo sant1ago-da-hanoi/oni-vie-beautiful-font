@@ -5,6 +5,7 @@ using KMod;
 using oni_vietnamese.Config;
 using oni_vietnamese.Utils;
 using TMPro;
+using UnityEngine;
 
 namespace oni_vietnamese {
     public class Patches : UserMod2 {

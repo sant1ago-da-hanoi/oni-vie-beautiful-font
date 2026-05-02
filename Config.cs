@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using UnityEngine;
 
 namespace oni_vietnamese.Config {
     public class FontConfig {
@@ -20,7 +21,7 @@ namespace oni_vietnamese.Config {
 
     public class ConfigManager {
         private readonly string ns = MethodBase.GetCurrentMethod().DeclaringType.Namespace;
-        private static readonly object _lock = new Object();
+        private static readonly object _lock = new object();
         private static ConfigManager instance;
         public string configPath { get; set; }
 

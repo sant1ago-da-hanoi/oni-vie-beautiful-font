@@ -37,12 +37,20 @@ Tạo file `config.json` trong thư mục mod:
 ## Build
 
 Yêu cầu:
-- .NET Framework 4.8
-- Visual Studio 2019+ hoặc MSBuild
-- Các DLL reference từ game ONI (đặt trong path tương ứng trong `.csproj`)
+- .NET SDK 6.0+ (hoặc bất kỳ version nào hỗ trợ `netstandard2.1`)
+- Game Oxygen Not Included đã cài qua Steam
+
+Project tự detect đường dẫn game DLLs trên macOS, Windows, và Linux (Steam default paths). Nếu cài ở chỗ khác, set property `ONIManagedDir` khi build.
 
 ```bash
-msbuild oni-vietnamese.csproj /p:Configuration=Debug
+dotnet build oni-vietnamese.csproj
+```
+
+Output: `bin/Debug/netstandard2.1/oni-vietnamese.dll`
+
+Custom game path:
+```bash
+dotnet build oni-vietnamese.csproj -p:ONIManagedDir="/path/to/OxygenNotIncluded_Data/Managed"
 ```
 
 ## License
