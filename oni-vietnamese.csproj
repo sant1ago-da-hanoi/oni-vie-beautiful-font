@@ -27,6 +27,8 @@
     <Reference Include="UnityEngine.AssetBundleModule" HintPath="$(ONIManagedDir)/UnityEngine.AssetBundleModule.dll" Private="false" />
     <Reference Include="UnityEngine.CoreModule" HintPath="$(ONIManagedDir)/UnityEngine.CoreModule.dll" Private="false" />
     <Reference Include="UnityEngine.TextCoreFontEngineModule" HintPath="$(ONIManagedDir)/UnityEngine.TextCoreFontEngineModule.dll" Private="false" />
+    <Reference Include="UnityEngine.TextRenderingModule" HintPath="$(ONIManagedDir)/UnityEngine.TextRenderingModule.dll" Private="false" />
+    <Reference Include="UnityEngine.UI" HintPath="$(ONIManagedDir)/UnityEngine.UI.dll" Private="false" />
   </ItemGroup>
 
 </Project>

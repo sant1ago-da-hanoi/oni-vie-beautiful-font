@@ -10,9 +10,40 @@ Mod thay font cho **Oxygen Not Included** — hỗ trợ hiển thị tiếng Vi
 
 ## Cài đặt
 
-1. Download mod từ [Steam Workshop](#) hoặc clone repo này
-2. Copy thư mục mod vào `Documents/Klei/OxygenNotIncluded/mods/Local/`
-3. Bật mod trong game
+### Steam Workshop (khuyến nghị)
+
+1. Đăng ký mod **[ONI Tiếng Việt](https://steamcommunity.com/sharedfiles/filedetails/?id=2574634278)** trên Steam Workshop
+2. Bật mod trong game, khởi động lại
+3. Vào **Settings → Language** chọn **Tiếng Việt**
+
+### Cài thủ công (local mod)
+
+1. Build DLL theo hướng dẫn bên dưới (hoặc tải từ [Releases](https://github.com/sant1ago-da-hanoi/oni-vie-beautiful-font/releases))
+2. Tạo thư mục local mod và copy files vào:
+   ```
+   # macOS
+   ~/Library/Application Support/unity.Klei.Oxygen Not Included/mods/Local/VieBeautifulFont/
+
+   # Windows
+   %USERPROFILE%\Documents\Klei\OxygenNotIncluded\mods\Local\VieBeautifulFont\
+   ```
+   Cấu trúc thư mục:
+   ```
+   VieBeautifulFont/
+   ├── oni-vietnamese.dll
+   ├── mod_info.yaml
+   ├── mod.yaml
+   ├── config.json
+   └── Assets/
+       ├── other/
+       │   └── font          ← AssetBundle cho macOS/Linux
+       └── win/
+           └── font          ← AssetBundle cho Windows
+   ```
+3. Mở game → **Mods** → bật **VieBeautifulFont** → khởi động lại
+4. Vào **Settings → Language** chọn **Tiếng Việt**
+
+> **Lưu ý:** Nếu đang dùng bản Workshop, tắt mod Workshop trước khi bật local mod để tránh conflict.
 
 ## Cấu hình
 
