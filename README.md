@@ -8,10 +8,11 @@ Tương thích với ONI build **719533+** (March 2026 update), hỗ trợ tất
 
 ## Cách hoạt động
 
-- Load font `.otf` trực tiếp lúc runtime (không cần AssetBundle)
+- Load font `.otf`/`.ttf` trực tiếp lúc runtime (không cần AssetBundle)
 - Tạo `TMP_FontAsset` và pre-populate atlas với bộ ký tự Vietnamese + ASCII
-- Dùng Harmony patch để inject font vào `Localization.sFontAsset`, cập nhật tất cả `TextStyleSetting` và `LocText`
-- Đọc `config.json` để cấu hình font, ngôn ngữ, hướng text, scale
+- **Heading** (GRAYSTROKE): thêm font custom làm fallback — game giữ font gốc, chỉ dùng custom font cho ký tự thiếu
+- **Body text** (Roboto, NotoSans, ...): replace trực tiếp bằng RobotoCondensed có đầy đủ tiếng Việt, match đúng variant (Regular/Bold/Italic/BoldItalic)
+- Đọc `config.json` để cấu hình font heading, ngôn ngữ, hướng text, scale
 
 ## Cài đặt
 
@@ -41,7 +42,11 @@ Tương thích với ONI build **719533+** (March 2026 update), hỗ trợ tất
    ├── config.json
    ├── preview.png
    └── Fonts/
-       └── GRAYSTROKE_REGULAR.otf
+       ├── GRAYSTROKE_REGULAR.otf
+       ├── RobotoCondensed-Regular.ttf
+       ├── RobotoCondensed-Bold.ttf
+       ├── RobotoCondensed-Italic.ttf
+       └── RobotoCondensed-BoldItalic.ttf
    ```
 3. Mở game → **Mods** → bật **VieBeautifulFont** → khởi động lại
 4. Vào **Settings → Language** chọn **Tiếng Việt**
@@ -63,7 +68,7 @@ File `config.json` trong thư mục mod:
 
 | Field | Mô tả |
 |-------|--------|
-| `filename` | Tên file font `.otf` trong thư mục `Fonts/` |
+| `filename` | Tên file font heading `.otf` trong thư mục `Fonts/` |
 | `code` | Mã ngôn ngữ (`vi`, `zh`, ...) |
 | `leftToRight` | Hướng text — `true` cho LTR, `false` cho RTL |
 | `scale` | Tỉ lệ font (1.0 = mặc định) |
