@@ -22,10 +22,18 @@ Tương thích với ONI build **719533+** (March 2026 update), hỗ trợ tất
 2. Bật mod trong game, khởi động lại
 3. Vào **Settings → Language** chọn **Tiếng Việt**
 
+### Cài nhanh bằng script
+
+```bash
+curl -sL https://raw.githubusercontent.com/sant1ago-da-hanoi/oni-vie-beautiful-font/master/install.sh | bash
+```
+
+Script tự detect OS, tải bản mới nhất từ GitHub Releases, và cài vào thư mục local mod.
+
 ### Cài thủ công (local mod)
 
-1. Build DLL theo hướng dẫn bên dưới (hoặc tải từ [Releases](https://github.com/sant1ago-da-hanoi/oni-vie-beautiful-font/releases))
-2. Tạo thư mục local mod và copy files vào:
+1. Tải zip từ [Releases](https://github.com/sant1ago-da-hanoi/oni-vie-beautiful-font/releases) (hoặc build DLL theo hướng dẫn bên dưới)
+2. Giải nén vào thư mục local mod:
    ```
    # macOS
    ~/Library/Application Support/unity.Klei.Oxygen Not Included/mods/Local/VieBeautifulFont/
