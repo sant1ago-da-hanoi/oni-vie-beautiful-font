@@ -1,5 +1,8 @@
 # ONI Vietnamese Beautiful Font
 
+[![Steam Workshop subscribers](https://img.shields.io/steam/subscriptions/2574634278?style=flat&label=subscribers)](https://steamcommunity.com/sharedfiles/filedetails/?id=2574634278)
+[![Steam Workshop favorites](https://img.shields.io/steam/favorites/2574634278?style=flat&label=favorites)](https://steamcommunity.com/sharedfiles/filedetails/?id=2574634278)
+
 ![Preview](preview.png)
 
 Mod thay font cho **Oxygen Not Included** — hỗ trợ hiển thị tiếng Việt với font đẹp hơn font mặc định.
