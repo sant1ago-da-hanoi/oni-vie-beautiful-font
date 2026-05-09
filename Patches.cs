@@ -209,5 +209,208 @@ namespace oni_vietnamese {
                 }
             }
         }
+
+        /// <summary>
+        /// Fix CustomGameSettings labels/tooltips not being translated.
+        /// 
+        /// Root cause: CustomGameSettingConfigs static fields are initialized before
+        /// translation loads. SettingLevel stores label/tooltip as plain strings
+        /// (copied from LocString at init time), so they remain in English.
+        /// 
+        /// This patch runs after Localization.LoadTranslation completes and
+        /// re-reads the now-translated LocString values back into SettingLevel/SettingConfig.
+        /// </summary>
+        [HarmonyPatch(typeof(Localization))]
+        [HarmonyPatch("LoadTranslation")]
+        [HarmonyPatch(new Type[] { typeof(string[]), typeof(bool) })]
+        public static class Localization_LoadTranslation_Patch {
+            public static void Postfix(bool __result) {
+                if (!__result) return;
+                try {
+                    RefreshCustomGameSettingLabels();
+                } catch (Exception ex) {
+                    Debug.LogWarning($"[{ns}] RefreshCustomGameSettingLabels error: {ex.Message}\n{ex.StackTrace}");
+                }
+            }
+        }
+
+        private static void RefreshCustomGameSettingLabels() {
+            // Get all static SettingConfig fields from CustomGameSettingConfigs
+            var configsType = typeof(Klei.CustomSettings.CustomGameSettingConfigs);
+            var settingFields = configsType.GetFields(BindingFlags.Static | BindingFlags.Public);
+
+            // Reflection setters for SettingConfig and SettingLevel
+            var configLabelSetter = typeof(Klei.CustomSettings.SettingConfig)
+                .GetProperty("label")?.GetSetMethod(true);
+            var configTooltipSetter = typeof(Klei.CustomSettings.SettingConfig)
+                .GetProperty("tooltip")?.GetSetMethod(true);
+            var levelLabelSetter = typeof(Klei.CustomSettings.SettingLevel)
+                .GetProperty("label")?.GetSetMethod(true);
+            var levelTooltipSetter = typeof(Klei.CustomSettings.SettingLevel)
+                .GetProperty("tooltip")?.GetSetMethod(true);
+
+            if (levelLabelSetter == null || levelTooltipSetter == null) {
+                Debug.LogWarning($"[{ns}] Cannot find SettingLevel label/tooltip setters");
+                return;
+            }
+
+            // Get the SETTINGS type: STRINGS.UI.FRONTEND.CUSTOMGAMESETTINGSSCREEN.SETTINGS
+            var settingsType = GetNestedType(typeof(STRINGS.UI), "FRONTEND", "CUSTOMGAMESETTINGSSCREEN", "SETTINGS");
+            if (settingsType == null) {
+                Debug.LogWarning($"[{ns}] Cannot find STRINGS.UI.FRONTEND.CUSTOMGAMESETTINGSSCREEN.SETTINGS type");
+                return;
+            }
+
+            int fixedCount = 0;
+
+            foreach (var field in settingFields) {
+                if (!typeof(Klei.CustomSettings.SettingConfig).IsAssignableFrom(field.FieldType))
+                    continue;
+
+                var config = (Klei.CustomSettings.SettingConfig)field.GetValue(null);
+                if (config == null) continue;
+
+                // Find the corresponding STRINGS nested type for this setting
+                string stringsName = GetStringsName(field.Name);
+                if (stringsName == null) continue;
+
+                var settingType = settingsType.GetNestedType(stringsName,
+                    BindingFlags.Public | BindingFlags.Static);
+                if (settingType == null) continue;
+
+                // Refresh SettingConfig.label and .tooltip from NAME/TOOLTIP LocString fields
+                var nameField = settingType.GetField("NAME", BindingFlags.Static | BindingFlags.Public);
+                var tooltipField = settingType.GetField("TOOLTIP", BindingFlags.Static | BindingFlags.Public);
+
+                if (nameField != null) {
+                    var locStr = (LocString)nameField.GetValue(null);
+                    if (locStr != null)
+                        configLabelSetter?.Invoke(config, new object[] { locStr.text });
+                }
+                if (tooltipField != null) {
+                    var locStr = (LocString)tooltipField.GetValue(null);
+                    if (locStr != null)
+                        configTooltipSetter?.Invoke(config, new object[] { locStr.text });
+                }
+
+                // Refresh each SettingLevel's label and tooltip
+                var levelsType = settingType.GetNestedType("LEVELS",
+                    BindingFlags.Public | BindingFlags.Static);
+                if (levelsType == null) continue;
+
+                var levels = config.GetLevels();
+                if (levels == null) continue;
+
+                // Build a map of all LEVELS nested types and their NAME/TOOLTIP fields
+                var levelTypes = levelsType.GetNestedTypes(BindingFlags.Public | BindingFlags.Static);
+                var levelNameMap = new Dictionary<Type, string>(); // type -> NAME text
+                var levelTooltipMap = new Dictionary<Type, string>(); // type -> TOOLTIP text
+
+                foreach (var lt in levelTypes) {
+                    var ltName = lt.GetField("NAME", BindingFlags.Static | BindingFlags.Public);
+                    var ltTooltip = lt.GetField("TOOLTIP", BindingFlags.Static | BindingFlags.Public);
+                    if (ltName != null) {
+                        var ls = (LocString)ltName.GetValue(null);
+                        if (ls != null) levelNameMap[lt] = ls.text;
+                    }
+                    if (ltTooltip != null) {
+                        var ls = (LocString)ltTooltip.GetValue(null);
+                        if (ls != null) levelTooltipMap[lt] = ls.text;
+                    }
+                }
+
+                foreach (var level in levels) {
+                    // Find matching STRINGS level type for this SettingLevel
+                    Type matchedType = null;
+                    foreach (var lt in levelTypes) {
+                        if (!levelNameMap.ContainsKey(lt)) continue;
+
+                        // Direct match (case-insensitive, ignore underscores)
+                        if (lt.Name.Replace("_", "").Equals(
+                                level.id.Replace("_", ""), StringComparison.OrdinalIgnoreCase)) {
+                            matchedType = lt;
+                            break;
+                        }
+                    }
+
+                    // Handle known mismatches where level.id != STRINGS type name
+                    if (matchedType == null) {
+                        string mappedName = GetLevelStringsName(stringsName, level.id);
+                        if (mappedName != null) {
+                            foreach (var lt in levelTypes) {
+                                if (lt.Name.Equals(mappedName, StringComparison.OrdinalIgnoreCase)) {
+                                    matchedType = lt;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (matchedType != null) {
+                        string ltNameStr;
+                        if (levelNameMap.TryGetValue(matchedType, out ltNameStr)) {
+                            levelLabelSetter.Invoke(level, new object[] { ltNameStr });
+                            fixedCount++;
+                        }
+                        string ltTooltipStr;
+                        if (levelTooltipMap.TryGetValue(matchedType, out ltTooltipStr)) {
+                            levelTooltipSetter.Invoke(level, new object[] { ltTooltipStr });
+                        }
+                    }
+                }
+            }
+
+            Debug.Log($"[{ns}] Refreshed {fixedCount} CustomGameSettings level labels after translation load");
+        }
+
+        private static Type GetNestedType(Type root, params string[] path) {
+            var current = root;
+            foreach (var name in path) {
+                current = current.GetNestedType(name, BindingFlags.Public | BindingFlags.Static);
+                if (current == null) return null;
+            }
+            return current;
+        }
+
+        /// <summary>
+        /// Maps field names from CustomGameSettingConfigs to their STRINGS nested type name.
+        /// </summary>
+        private static string GetStringsName(string fieldName) {
+            switch (fieldName) {
+                case "WorldgenSeed": return "WORLDGEN_SEED";
+                case "ClusterLayout": return "CLUSTER_CHOICE";
+                case "SandboxMode": return "SANDBOXMODE";
+                case "FastWorkersMode": return "FASTWORKERSMODE";
+                case "SaveToCloud": return "SAVETOCLOUD";
+                case "CalorieBurn": return "CALORIE_BURN";
+                case "BionicWattage": return "BIONICPOWERUSE";
+                case "ImmuneSystem": return "IMMUNESYSTEM";
+                case "Morale": return "MORALE";
+                case "Durability": return "DURABILITY";
+                case "Radiation": return "RADIATION";
+                case "Stress": return "STRESS";
+                case "StressBreaks": return "STRESS_BREAKS";
+                case "CarePackages": return "CAREPACKAGES";
+                case "Teleporters": return "TELEPORTERS";
+                case "MeteorShowers": return "METEORSHOWERS";
+                case "DemoliorDifficulty": return "DEMOLIORDIFFICULTY";
+                default: return null;
+            }
+        }
+
+        /// <summary>
+        /// Maps level ids that don't match their STRINGS type name.
+        /// Returns the STRINGS nested type name for the given level id, or null if no special mapping needed.
+        /// </summary>
+        private static string GetLevelStringsName(string settingStringsName, string levelId) {
+            // CarePackages: level "Disabled" -> STRINGS "DUPLICANTS_ONLY", "Enabled" -> "NORMAL"
+            if (settingStringsName == "CAREPACKAGES") {
+                switch (levelId) {
+                    case "Disabled": return "DUPLICANTS_ONLY";
+                    case "Enabled": return "NORMAL";
+                }
+            }
+            return null;
+        }
     }
 }
